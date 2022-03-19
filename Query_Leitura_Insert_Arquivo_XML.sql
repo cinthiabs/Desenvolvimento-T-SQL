@@ -1,15 +1,45 @@
+/*CREATE TABLE PEDIDO (
+Pedido int PRIMARY KEY identity ,
+chave_NFE varchar(50),
+numeroNF varchar(20),
+serieNFE varchar(20),
+tpNF varchar(20),
+cod_Mun varchar(20),
+dataNF VARCHAR(50),
+data_Inclusao DATETIME,
+Documento varchar(50),
+remetenteCNPJ varchar(50),
+remetenteIE varchar(50),
+remetenteRazaoSocial varchar(50),
+remetenteEndereco varchar(50),
+remetenteNumero varchar(50),
+remetenteBairro varchar(50),
+remetenteMunicipio varchar(50),
+remetenteCEP varchar(50),
+remetenteUF varchar(50),
+destinatarioIE varchar(50),
+destinatarioCPF varchar(50),
+destinatarioCNPJ varchar(50),
+destinatarioRazaoSocial varchar(50),
+destinatarioEndereco varchar(50),
+destinatarioMunicipioID int,
+destinatarioMunicipio varchar(50),
+destinatarioCEP varchar(50),
+destinatarioUF varchar(50),
+InformacaoAdicional varchar(200),
+valor float
+)
+*/
 
-DECLARE @FileName  VARCHAR(1000)  = 'C:\arquivo\35220364963044000108550010044224291021361249-nfe.xml'                                                    
+DECLARE @FileName  VARCHAR(1000)  = 'C:\arquivo\42210910832644000108550080012108291639380464-nfe.xml'                                                    
 
 BEGIN                                     
 	IF OBJECT_ID('TEMPDB..#TMPTabela_xml') IS NOT NULL DROP TABLE #TMPTabela_xml
 	IF OBJECT_ID('TEMPDB..#TMP_Importa') IS NOT NULL DROP TABLE #TMP_Importa                                     
 	IF OBJECT_ID('TEMPDB..#TMP_Importa_ITEMS') IS NOT NULL DROP TABLE #TMP_Importa_ITEMS                                     
 
-                                        
-	 DECLARE @XMLBASE XML, @XMLITEMS XML, @SQL VARCHAR(max), @Peso FLOAT, @Qtde INT     
+	 DECLARE @XMLBASE XML, @XMLITEMS XML, @SQL VARCHAR(max), @Peso FLOAT, @Qtde INT, @DOCUMENTO VARCHAR(20)     
                                     
-             
 	 SET @SQL ='SELECT  CONVERT(xml, BulkColumn, 2) XML FROM OPENROWSET(Bulk ''' + @FileName + ''', SINGLE_BLOB) [rowsetresults]; '      
       
 	 CREATE TABLE #TMPTabela_xml (TEXTO xml)      
@@ -28,13 +58,13 @@ BEGIN
 	  m.cteProc.query('NFe/infNFe/ide/serie').value ('.', 'nvarchar(255)') AS serieNFe,      
 	  m.cteProc.query('NFe/infNFe/ide/tpNF').value ('.', 'nvarchar(255)') AS tpNF,      
 	  m.cteProc.query('NFe/infNFe/ide/cMunFG').value ('.', 'nvarchar(255)') AS Cod_Mun,     
-	  m.cteProc.query('NFe/infNFe/ide/dhEmi').value ('.', 'nvarchar(255)') AS Data_NF,      
+	  m.cteProc.query('NFe/infNFe/ide/dhEmi').value ('.', 'nvarchar(255)') AS DataNF,      
 	  m.cteProc.query('NFe/infNFe/ide/nNF').value ('.', 'nvarchar(255)') AS Documento,      
 	  m.cteProc.query('NFe/infNFe/emit/CNPJ').value ('.', 'nvarchar(255)') AS remetenteCNPJ,      
 	  m.cteProc.query('NFe/infNFe/emit/IE').value ('.', 'nvarchar(255)') AS remetenteIE,      
 	  m.cteProc.query('NFe/infNFe/emit/xNome').value ('.', 'nvarchar(255)') AS remetenteRazaoSocial,      
 	  m.cteProc.query('NFe/infNFe/emit/enderEmit/xLgr').value ('.', 'nvarchar(255)') AS remetenteEndereco,      
-	  m.cteProc.query('NFe/infNFe/emit/enderEmit/nro').value ('.', 'nvarchar(255)') AS remetenteNum,      
+	  m.cteProc.query('NFe/infNFe/emit/enderEmit/nro').value ('.', 'nvarchar(255)') AS remetenteNumero,      
 	  m.cteProc.query('NFe/infNFe/emit/enderEmit/xBairro').value ('.', 'nvarchar(255)') AS remetenteBairro,      
 	  m.cteProc.query('NFe/infNFe/emit/enderEmit/xMun').value ('.', 'nvarchar(255)') AS remetenteMunicipio,      
 	  m.cteProc.query('NFe/infNFe/emit/enderEmit/CEP').value ('.', 'nvarchar(255)') AS remetentecep,      
@@ -49,9 +79,9 @@ BEGIN
 	  m.cteProc.query('NFe/infNFe/dest/enderDest/xBairro').value ('.', 'nvarchar(255)') AS destinatarioBairro,      
 	  m.cteProc.query('NFe/infNFe/dest/enderDest/cMun').value ('.', 'nvarchar(255)') AS destinatarioMunicipioID,       
 	  m.cteProc.query('NFe/infNFe/dest/enderDest/xMun').value ('.', 'nvarchar(255)') AS destinatarioMunicipio,       
-	  m.cteProc.query('NFe/infNFe/dest/enderDest/CEP').value ('.', 'nvarchar(255)') AS destinatarioCep,      
+	  m.cteProc.query('NFe/infNFe/dest/enderDest/CEP').value ('.', 'nvarchar(255)') AS destinatariocep,      
 	  m.cteProc.query('NFe/infNFe/dest/enderDest/UF').value ('.', 'nvarchar(255)') AS destinatarioUF,      
-	  m.cteProc.query('NFe/infNFe/infAdic/infCpl').value ('.', 'nvarchar(255)') AS INFOADCIONAL,      
+	  m.cteProc.query('NFe/infNFe/infAdic/infCpl').value ('.', 'nvarchar(255)') AS InformacaoAdicional,      
 	  m.cteProc.query('NFe/infNFe/total/ICMSTot/vNF').value ('.', 'nvarchar(255)') AS valor,      
 	  m.cteProc.query('protNFe/nProt').value ('.', 'nvarchar(255)') AS ReciboNF  
 	  into #TMP_Importa      
@@ -70,8 +100,72 @@ BEGIN
 	  INTO #TMP_Importa_ITEMS      
 	  FROM @xmlitems.nodes('nfeProc/NFe/infNFe/det') as d(det)      
 	 ;WITH XMLNAMESPACES (DEFAULT 'http://www.portalfiscal.inf.br/nfe')      
-      
-	 select * from #TMP_Importa 
-	 select * from #TMPTabela_xml 
-	 select * from #TMP_Importa_ITEMS 
+
+   SELECT @DOCUMENTO = DOCUMENTO FROM  #TMP_Importa
+
+  IF NOT EXISTS(SELECT * FROM PEDIDO WHERE DOCUMENTO = @DOCUMENTO)
+  BEGIN 
+	INSERT INTO dbo.PEDIDO (
+	chave_NFE,
+	numeroNF,
+	serieNFE,
+	tpNF,
+	cod_Mun,
+	dataNF,
+	data_inclusao,
+	Documento,
+	remetenteCNPJ,
+	remetenteIE,
+	remetenteRazaoSocial,
+	remetenteEndereco,
+	remetenteNumero,
+	remetenteBairro,
+	remetenteMunicipio,
+	remetenteCEP,
+	remetenteUF,
+	destinatarioIE,
+	destinatarioCPF,
+	destinatarioCNPJ,
+	destinatarioRazaoSocial,
+	destinatarioEndereco,
+	destinatarioMunicipioID,
+	destinatarioMunicipio ,
+	destinatarioCEP,
+	destinatarioUF,
+	InformacaoAdicional,
+	valor)
+	SELECT 
+	chave_NFE,
+	numeroNF,
+	serieNFE,
+	tpNF,
+	cod_Mun,
+	dataNF,
+	GETDATE(),
+	Documento,
+	remetenteCNPJ,
+	remetenteIE,
+	remetenteRazaoSocial,
+	remetenteEndereco,
+	remetenteNumero,
+	remetenteBairro,
+	remetenteMunicipio,
+	remetenteCEP,
+	remetenteUF,
+	destinatarioIE,
+	destinatarioCPF,
+	destinatarioCNPJ,
+	destinatarioRazaoSocial,
+	destinatarioEndereco,
+	destinatarioMunicipioID,
+	destinatarioMunicipio ,
+	destinatarioCEP,
+	destinatarioUF,
+	InformacaoAdicional,
+	valor FROM #TMP_Importa  
+
+	SELECT * FROM PEDIDO
+	
+   END
+	ELSE SELECT 'PEDIDO JÁ CADASTRADO' AS RETORNO
 END
